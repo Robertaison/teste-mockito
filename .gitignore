@@ -1,0 +1,10 @@
+#diretorios
+.idea
+.settings
+out
+bin
+
+#arquivos
+.classpath
+.project
+.attach_pid24801
