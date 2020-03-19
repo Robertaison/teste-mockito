@@ -33,6 +33,7 @@
   User name: root
   Password: root
 ```  
+  * In the application, we have a directory called infra-context, copy script in db_migration.sql to DBeaver and execut it, each command individually, following the order.
 
 * This course is at:
 [Alura](https://www.alura.com.br/)
