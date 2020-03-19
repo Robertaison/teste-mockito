@@ -44,5 +44,10 @@ docker-compose -f mysql.yaml up
   
 5. Now you can run your tests, enjoy!!
 
+##### Support Material
+ * [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+ * [Docker-compose](https://dbeaver.io/download/)
+ * [DBeaver](https://dbeaver.io/download/)
+
 ##### This course is at:
 [Alura](https://www.alura.com.br/)
