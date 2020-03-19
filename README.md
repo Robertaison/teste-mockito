@@ -17,12 +17,19 @@
  * Docker
  * Docker-compose
  * DBeaver
+ 
+1. Import the project
 
-1. Run the command bellow to prepare your database, it'll be already configurated.
+2. Import the external libraries, it will be at 'external-libs' folder
 
-``` docker-compose -f mysql.yaml up ```
+3. Run the commands bellow to prepare your database, it'll be already configurated. (Uou must be in the file folder to run docker-compose command) 
 
-2. Now open the DBeaver to connect to the database, and follow the next steps:
+``` 
+cd infra-context
+docker-compose -f mysql.yaml up 
+```
+
+4. Now open the DBeaver to connect to the database, and follow the next steps:
   * At the top, in the Database tab, click on 'New Database Connection'
   * Choose MySQL
   * To connect, use the following configuration
@@ -34,6 +41,8 @@
   Password: root
 ```  
   * In the application, we have a directory called infra-context, copy script in db_migration.sql to DBeaver and execut it, each command individually, following the order.
+  
+5. Now you can run your tests, enjoy!!
 
-* This course is at:
+##### This course is at:
 [Alura](https://www.alura.com.br/)
