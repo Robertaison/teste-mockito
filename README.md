@@ -1,4 +1,4 @@
-# java-collections-and-stream
+# teste-mockito
 
 ## This repository intend to explore tests implementation using mockito framework.
 
