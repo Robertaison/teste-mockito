@@ -11,16 +11,17 @@ public class EncerradorDeLeilao {
 
 	private int total = 0;
 	private RepositorioDeLeiloes dao;
-
-	public EncerradorDeLeilao(RepositorioDeLeiloes dao) {
-		this.dao = dao;
-	}
+	private EnviadorDeEmail carteiro;
 
 	public EncerradorDeLeilao() {
 	}
 
-	public void encerra(Boolean bool) {
-		LeilaoDao dao = new LeilaoDao();
+	public EncerradorDeLeilao(RepositorioDeLeiloes dao, EnviadorDeEmail carteiro) {
+		this.dao = dao;
+		this.carteiro = carteiro;
+	}
+
+	public void encerra() {
 		List<Leilao> todosLeiloesCorrentes = dao.correntes();
 
 		for (Leilao leilao : todosLeiloesCorrentes) {
@@ -28,11 +29,13 @@ public class EncerradorDeLeilao {
 				leilao.encerra();
 				total++;
 				dao.atualiza(leilao);
+				carteiro.envia(leilao);
 			}
 		}
 	}
 
-	public void encerra() {
+	public void encerra(Boolean bool) {
+		LeilaoDao dao = new LeilaoDao();
 		List<Leilao> todosLeiloesCorrentes = dao.correntes();
 
 		for (Leilao leilao : todosLeiloesCorrentes) {
@@ -55,7 +58,6 @@ public class EncerradorDeLeilao {
 			data.add(Calendar.DAY_OF_MONTH, 1);
 			diasNoIntervalo++;
 		}
-
 		return diasNoIntervalo;
 	}
 

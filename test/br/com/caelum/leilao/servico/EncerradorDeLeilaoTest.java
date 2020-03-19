@@ -13,16 +13,21 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class EncerradorDeLeilaoTest {
 
     private LeilaoDao dao = new LeilaoDao();
+    private EnviadorDeEmail enviadorDeEmail;
+    private RepositorioDeLeiloes daoFalso;
+    private EncerradorDeLeilao encerrador;
 
     @Before
     public void setup(){
         dao.cleanDataBase();
+        this.daoFalso = mock(RepositorioDeLeiloes.class);
+        this.enviadorDeEmail = mock(EnviadorDeEmail.class);
+        this.encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
     }
 
     @Test
@@ -58,7 +63,7 @@ public class EncerradorDeLeilaoTest {
 
         RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
 
-        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso);
+        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
         when(daoFalso.correntes()).thenReturn(leiloesAntigos);
         encerrador.encerra();
 
@@ -83,8 +88,13 @@ public class EncerradorDeLeilaoTest {
         RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
         when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1, leilao2));
 
-        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso);
+        EnviadorDeEmail enviadorDeEmail = mock(EnviadorDeEmail.class);
+
+        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
         encerrador.encerra();
+
+        verify(daoFalso, never()).atualiza(leilao1);
+        verify(daoFalso, never()).atualiza(leilao2);
 
         assertEquals(0, encerrador.getTotalEncerrados());
         assertFalse(leilao1.isEncerrado());
@@ -97,9 +107,27 @@ public class EncerradorDeLeilaoTest {
         RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
         when(daoFalso.correntes()).thenReturn(new ArrayList<Leilao>());
 
-        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso);
+        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
         encerrador.encerra();
 
         assertEquals(0, encerrador.getTotalEncerrados());
+    }
+
+    @Test
+    public void deveAtualizarLeiloesEncerrados() {
+        Calendar data = Calendar.getInstance();
+        data.set(1999, 5, 20);
+
+        Leilao leilao = new CriadorDeLeilao().para("Celular")
+                .naData(data).constroi();
+
+        RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
+
+        when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao));
+
+        EncerradorDeLeilao encerradorDeLeilao = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
+        encerradorDeLeilao.encerra();
+
+        verify(daoFalso, times(1)).atualiza(leilao);
     }
 }
