@@ -61,9 +61,7 @@ public class EncerradorDeLeilaoTest {
         Leilao leilao2 = new CriadorDeLeilao().para("Geladeira").naData(antiga).constroi();
         List<Leilao> leiloesAntigos = Arrays.asList(leilao1, leilao2);
 
-        RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
 
-        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
         when(daoFalso.correntes()).thenReturn(leiloesAntigos);
         encerrador.encerra();
 
@@ -85,12 +83,7 @@ public class EncerradorDeLeilaoTest {
         Leilao leilao2 = new CriadorDeLeilao().para("Geladeira")
                 .naData(ontem).constroi();
 
-        RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
         when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1, leilao2));
-
-        EnviadorDeEmail enviadorDeEmail = mock(EnviadorDeEmail.class);
-
-        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
         encerrador.encerra();
 
         verify(daoFalso, never()).atualiza(leilao1);
@@ -104,10 +97,7 @@ public class EncerradorDeLeilaoTest {
     @Test
     public void naoDeveEncerrarLeiloesCasoNaoHajaNenhum() {
 
-        RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
         when(daoFalso.correntes()).thenReturn(new ArrayList<Leilao>());
-
-        EncerradorDeLeilao encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
         encerrador.encerra();
 
         assertEquals(0, encerrador.getTotalEncerrados());
@@ -121,12 +111,8 @@ public class EncerradorDeLeilaoTest {
         Leilao leilao = new CriadorDeLeilao().para("Celular")
                 .naData(data).constroi();
 
-        RepositorioDeLeiloes daoFalso = mock(RepositorioDeLeiloes.class);
-
         when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao));
-
-        EncerradorDeLeilao encerradorDeLeilao = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
-        encerradorDeLeilao.encerra();
+        encerrador.encerra();
 
         verify(daoFalso, times(1)).atualiza(leilao);
     }
