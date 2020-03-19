@@ -6,6 +6,7 @@ import br.com.caelum.leilao.infra.dao.LeilaoDao;
 import br.com.caelum.leilao.infra.dao.RepositorioDeLeiloes;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +22,9 @@ public class EncerradorDeLeilaoTest {
     private EnviadorDeEmail enviadorDeEmail;
     private RepositorioDeLeiloes daoFalso;
     private EncerradorDeLeilao encerrador;
+    private Leilao leilao1;
+    private Leilao leilao2;
+    private Calendar antiga = Calendar.getInstance();
 
     @Before
     public void setup(){
@@ -28,16 +32,14 @@ public class EncerradorDeLeilaoTest {
         this.daoFalso = mock(RepositorioDeLeiloes.class);
         this.enviadorDeEmail = mock(EnviadorDeEmail.class);
         this.encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
+
+        antiga.set(1999, 1, 20);
+        this.leilao1 = new CriadorDeLeilao().para("Tv de plasma").naData(antiga).constroi();
+        this.leilao2 = new CriadorDeLeilao().para("Geladeira").naData(antiga).constroi();
     }
 
     @Test
     public void deveEncerrrarLeiloesQueComecaramUmaSemanaAntes() {
-        Calendar antiga = Calendar.getInstance();
-        antiga.set(1999, 1, 20);
-
-        Leilao leilao1 = new CriadorDeLeilao().para("Tv de plasma").naData(antiga).constroi();
-        Leilao leilao2 = new CriadorDeLeilao().para("Geladeira").naData(antiga).constroi();
-
 
         dao.salva(leilao1);
         dao.salva(leilao2);
@@ -54,8 +56,6 @@ public class EncerradorDeLeilaoTest {
 
     @Test
     public void deveEncerrrarLeiloesQueComecaramUmaSemanaAntesMockito() {
-        Calendar antiga = Calendar.getInstance();
-        antiga.set(1999, 1, 20);
 
         Leilao leilao1 = new CriadorDeLeilao().para("Tv de plasma").naData(antiga).constroi();
         Leilao leilao2 = new CriadorDeLeilao().para("Geladeira").naData(antiga).constroi();
@@ -105,15 +105,21 @@ public class EncerradorDeLeilaoTest {
 
     @Test
     public void deveAtualizarLeiloesEncerrados() {
-        Calendar data = Calendar.getInstance();
-        data.set(1999, 5, 20);
 
-        Leilao leilao = new CriadorDeLeilao().para("Celular")
-                .naData(data).constroi();
-
-        when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao));
+        when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1));
         encerrador.encerra();
 
-        verify(daoFalso, times(1)).atualiza(leilao);
+        verify(daoFalso, times(1)).atualiza(leilao1);
+    }
+
+    @Test
+    public void deveEnviarEmailAoAtualizar() {
+
+        when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1));
+        encerrador.encerra();
+
+        InOrder inOrder = inOrder(daoFalso, enviadorDeEmail);
+        inOrder.verify(daoFalso).atualiza(leilao1);
+        inOrder.verify(enviadorDeEmail).envia(leilao1);
     }
 }
