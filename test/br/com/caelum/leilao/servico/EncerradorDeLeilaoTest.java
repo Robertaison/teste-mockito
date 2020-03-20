@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 public class EncerradorDeLeilaoTest {
 
     private LeilaoDao dao = new LeilaoDao();
-    private EnviadorDeEmail enviadorDeEmail;
+    private Carteiro carteiro;
     private RepositorioDeLeiloes daoFalso;
     private EncerradorDeLeilao encerrador;
     private Leilao leilao1;
@@ -30,8 +30,8 @@ public class EncerradorDeLeilaoTest {
     public void setup(){
         dao.cleanDataBase();
         this.daoFalso = mock(RepositorioDeLeiloes.class);
-        this.enviadorDeEmail = mock(EnviadorDeEmail.class);
-        this.encerrador = new EncerradorDeLeilao(daoFalso, enviadorDeEmail);
+        this.carteiro = mock(Carteiro.class);
+        this.encerrador = new EncerradorDeLeilao(daoFalso, carteiro);
 
         antiga.set(1999, 1, 20);
         this.leilao1 = new CriadorDeLeilao().para("Tv de plasma").naData(antiga).constroi();
@@ -118,8 +118,33 @@ public class EncerradorDeLeilaoTest {
         when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1));
         encerrador.encerra();
 
-        InOrder inOrder = inOrder(daoFalso, enviadorDeEmail);
+        InOrder inOrder = inOrder(daoFalso, carteiro);
         inOrder.verify(daoFalso).atualiza(leilao1);
-        inOrder.verify(enviadorDeEmail).envia(leilao1);
+        inOrder.verify(carteiro).envia(leilao1);
+    }
+
+    @Test
+    public void deveContinuarAExecucaoMesmoQuandoFalha() {
+
+        when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1, leilao2));
+        doThrow(new RuntimeException()).when(daoFalso).atualiza(leilao1);
+
+        encerrador.encerra();
+
+        verify(daoFalso).atualiza(leilao2);
+        verify(carteiro).envia(leilao2);
+
+        verify(carteiro, times(0)).envia(leilao1);
+    }
+
+    @Test
+    public void deveFalharEmTodoLeiloesENuncaEnviarEmail() {
+
+        when(daoFalso.correntes()).thenReturn(Arrays.asList(leilao1, leilao2));
+        doThrow(new RuntimeException()).when(daoFalso).atualiza(any(Leilao.class));
+
+        encerrador.encerra();
+
+        verify(carteiro, never()).envia(any(Leilao.class));
     }
 }
